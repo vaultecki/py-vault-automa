@@ -1,0 +1,43 @@
+{
+  "version": 0.1,
+  "initial": "Superstate",
+  "data": {
+      "origin": "38.5200248466315,-28.6320306729769",
+      "number_vehicles": 2,
+      "role_vehicle1": "lsv",
+      "role_vehicle2": "ssv",
+      "name_mission": "zero_wall",
+      "roll_enable": true
+  },
+  "state": {
+    "Superstate": {
+      "transition": {
+        "init_ok": "mp_init_01"
+      }
+    },
+    "mp_init_01": {
+      "transition": {
+        "event": "target",
+        "start": "mp_change_02",
+        "abort": "mp_end_03"
+      },
+      "data": {
+        "service": "standard"
+      }
+    },
+    "mp_change_02": {
+      "data": {
+        "rel_pos_vehicle_1": [0.0, 0.0, 10.0],
+        "rel_pos_vehicle_2": [-7.0, -7.0, 0.0]
+      },
+      "transition": {
+        "formation_ok": "mp_end_03",
+        "abort": "mp_end_03"
+      }
+    },
+    "mp_end_03": {
+      "data": {},
+      "transition": {}
+    }
+  }
+}
