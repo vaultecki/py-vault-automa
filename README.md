@@ -1,16 +1,17 @@
 # VaultState - Finite State Machine
 
-Eine robuste, JSON-basierte Finite State Machine (FSM) Implementierung in Python mit Signal-Support und umfangreicher Validierung.
+A robust, JSON-based Finite State Machine (FSM) implementation in Python with signal support, comprehensive validation, and logging capabilities.
 
 ## Features
 
-- 📄 **JSON-basierte Konfiguration** - Einfache Definition von States und Transitionen
-- 🔔 **Signal-System** - Event-basierte Kommunikation via PySignal
-- ✅ **Umfangreiche Validierung** - Prüfung der FSM-Struktur beim Laden
-- 📊 **State History** - Tracking aller Zustandsübergänge
-- 🎨 **Graph Export** - Export für Visualisierung
-- 🔍 **Type Hints** - Vollständige Typ-Annotationen
-- ⚡ **Strict/Non-Strict Mode** - Flexible Fehlerbehandlung
+- 📄 **JSON-based Configuration** - Easy definition of states and transitions
+- 🔔 **Signal System** - Event-based communication via PySignal
+- ✅ **Comprehensive Validation** - FSM structure validation on load
+- 📊 **State History** - Tracking of all state transitions
+- 🎨 **Graph Export** - Export for visualization
+- 🔍 **Type Hints** - Full type annotations
+- ⚡ **Strict/Non-Strict Mode** - Flexible error handling
+- 📝 **Logging Support** - Configurable logging with multiple levels
 
 ## Installation
 
@@ -23,11 +24,11 @@ pip install -r requirements.txt
 PySignal>=1.1.1
 ```
 
-## Schnellstart
+## Quick Start
 
-### 1. FSM-Konfiguration erstellen
+### 1. Create FSM Configuration
 
-Erstellen Sie eine JSON-Datei (z.B. `example_fsm.json`):
+Create a JSON file (e.g., `example_fsm.json`):
 
 ```json
 {
@@ -73,104 +74,144 @@ Erstellen Sie eine JSON-Datei (z.B. `example_fsm.json`):
 }
 ```
 
-### 2. FSM verwenden
+### 2. Use the FSM
 
 ```python
 from vault_state import VaultState
+import logging
 
-# FSM initialisieren
+# Optional: Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Initialize FSM
 fsm = VaultState("example_fsm.json")
 
-# Aktuellen State abfragen
+# Query current state
 print(fsm.get_current_state())  # "Superstate"
 
-# Daten des aktuellen States
+# Get current state data
 print(fsm.get_data())
 
-# Mögliche Transitionen
+# Get possible transitions
 print(fsm.get_possible_transitions())  # ["init_ok"]
 
-# Event auslösen
+# Trigger event
 fsm.event("init_ok")
 print(fsm.get_current_state())  # "mp_init_01"
 ```
 
-## API-Referenz
+## Logging Configuration
 
-### Konstruktor
+VaultState uses Python's built-in logging module. Configure logging levels to control verbosity:
+
+```python
+import logging
+
+# Set logging level for VaultState
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Or configure specific logger
+logger = logging.getLogger('VaultState')
+logger.setLevel(logging.INFO)
+```
+
+### Logging Levels
+
+- **DEBUG**: Detailed information about transitions, state changes, and data access
+- **INFO**: Confirmation of successful operations and state transitions
+- **WARNING**: Invalid transitions, missing data, validation warnings (non-strict mode)
+- **ERROR**: Validation errors, file errors
+- **CRITICAL**: Not used by VaultState
+
+### Example Log Output
+
+```
+2025-11-18 10:15:23 - VaultState - INFO - Initialized FSM from example_fsm.json
+2025-11-18 10:15:23 - VaultState - INFO - Initial state: Superstate
+2025-11-18 10:15:23 - VaultState - DEBUG - Loaded 4 states with 5 transitions
+2025-11-18 10:15:24 - VaultState - INFO - Event 'init_ok' triggered: Superstate -> mp_init_01
+2025-11-18 10:15:25 - VaultState - WARNING - No transition for event 'invalid' in state 'mp_init_01'
+```
+
+## API Reference
+
+### Constructor
 
 ```python
 VaultState(filename: str, strict_mode: bool = True)
 ```
 
-- `filename`: Pfad zur JSON-Konfigurationsdatei
-- `strict_mode`: Wenn `True`, wirft Exceptions bei Validierungsfehlern
+- `filename`: Path to JSON configuration file
+- `strict_mode`: If `True`, raises exceptions on validation errors
 
 **Raises:**
-- `FSMValidationError`: Bei ungültiger FSM-Konfiguration
-- `FileNotFoundError`: Wenn die Datei nicht existiert
+- `FSMValidationError`: On invalid FSM configuration
+- `FileNotFoundError`: If configuration file doesn't exist
 
-### Methoden
+### Methods
 
-#### State-Abfrage
+#### State Queries
 
 ```python
 get_current_state() -> str
 ```
-Gibt den Namen des aktuellen States zurück.
+Returns the name of the current state.
 
 ```python
 get_all_states() -> List[str]
 ```
-Gibt eine Liste aller definierten States zurück.
+Returns a list of all defined states.
 
 ```python
 get_state_history() -> List[str]
 ```
-Gibt die Historie aller durchlaufenen States zurück.
+Returns the history of all traversed states.
 
-#### Daten-Zugriff
+#### Data Access
 
 ```python
 get_data() -> Dict[str, Any]
 ```
-Gibt die Daten des aktuellen States zurück (merged mit globalen Daten).
+Returns data for the current state (merged with global data).
 
 ```python
 get_data_state(state: Optional[str] = None) -> Dict[str, Any]
 ```
-Gibt Daten für einen spezifischen State zurück. Bei `state=None` werden globale Daten zurückgegeben.
+Returns data for a specific state. Returns global data if `state=None`.
 
-#### Transitionen
+#### Transitions
 
 ```python
 event(event: Optional[str] = None) -> bool
 ```
-Verarbeitet ein Event und führt ggf. eine Transition durch.
+Processes an event and performs a transition if valid.
 
-**Returns:** `True` wenn State gewechselt wurde, `False` sonst.
+**Returns:** `True` if state changed, `False` otherwise.
 
 ```python
 get_possible_transitions() -> List[str]
 ```
-Gibt eine Liste aller gültigen Events für den aktuellen State zurück.
+Returns a list of all valid events for the current state.
 
 ```python
 is_valid_transition(event: str) -> bool
 ```
-Prüft, ob ein Event im aktuellen State gültig ist.
+Checks if an event is valid in the current state.
 
 #### Utility
 
 ```python
 reset() -> None
 ```
-Setzt die FSM zum initialen State zurück und löscht die History.
+Resets the FSM to the initial state and clears history.
 
 ```python
 export_graph() -> Dict[str, Any]
 ```
-Exportiert die FSM-Struktur für Visualisierung.
+Exports the FSM structure for visualization.
 
 **Returns:**
 ```python
@@ -186,46 +227,54 @@ Exportiert die FSM-Struktur für Visualisierung.
 
 ### Signals
 
-VaultState bietet zwei Class-Signals:
+VaultState provides two class signals:
 
 ```python
 VaultState.automa_event
 ```
-Signal zum Auslösen von Events. Verbinden Sie Ihre Event-Quelle:
+Signal for triggering events. Connect your event source:
 
 ```python
 fsm.automa_event.connect(lambda event: fsm.event(event))
-# Oder nutzen Sie die automatische Verbindung im Constructor
+# Or use the automatic connection in constructor
 ```
 
 ```python
 VaultState.automa_state_changed
 ```
-Signal das bei State-Wechseln gefeuert wird:
+Signal fired on state changes:
 
 ```python
 def on_state_changed(new_state: str):
-    print(f"Neuer State: {new_state}")
+    print(f"New state: {new_state}")
 
 fsm.automa_state_changed.connect(on_state_changed)
 ```
 
-## Erweiterte Beispiele
+## Advanced Examples
 
-### Mit Signal-Callbacks
+### With Signal Callbacks and Logging
 
 ```python
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 def on_state_change(new_state: str):
-    print(f"✓ State gewechselt zu: {new_state}")
+    logging.info(f"✓ State changed to: {new_state}")
     
-    # Automatische Aktionen basierend auf State
+    # Automatic actions based on state
     if new_state == "mp_end_03":
-        print("Mission beendet!")
+        logging.info("Mission completed!")
 
 fsm = VaultState("example_fsm.json")
 fsm.automa_state_changed.connect(on_state_change)
 
-# Events auslösen
+# Trigger events
 fsm.automa_event.emit("init_ok")
 fsm.automa_event.emit("start")
 ```
@@ -233,7 +282,7 @@ fsm.automa_event.emit("start")
 ### Non-Strict Mode
 
 ```python
-# Warnungen statt Exceptions bei Validierungsfehlern
+# Warnings instead of exceptions on validation errors
 fsm = VaultState("example_fsm.json", strict_mode=False)
 ```
 
@@ -249,19 +298,21 @@ print(" → ".join(history))
 # Output: Superstate → mp_init_01 → mp_change_02 → mp_end_03
 ```
 
-### Validierung vor Event-Ausführung
+### Validation Before Event Execution
 
 ```python
+import logging
+
 event = "start"
 
 if fsm.is_valid_transition(event):
     fsm.event(event)
 else:
-    print(f"Event '{event}' ist im aktuellen State nicht gültig")
-    print(f"Gültige Events: {fsm.get_possible_transitions()}")
+    logging.warning(f"Event '{event}' is not valid in current state")
+    logging.info(f"Valid events: {fsm.get_possible_transitions()}")
 ```
 
-### Graph-Visualisierung vorbereiten
+### Graph Visualization Preparation
 
 ```python
 import json
@@ -269,26 +320,63 @@ import json
 graph_data = fsm.export_graph()
 print(json.dumps(graph_data, indent=2))
 
-# Kann z.B. mit Graphviz, D3.js oder Cytoscape.js visualisiert werden
+# Can be visualized with Graphviz, D3.js, or Cytoscape.js
 ```
 
-## JSON-Schema
+### Custom Logging Configuration
 
-Die FSM-Konfiguration muss folgende Struktur haben:
+```python
+import logging
+from logging.handlers import RotatingFileHandler
+
+# Create custom logger
+logger = logging.getLogger('VaultState')
+logger.setLevel(logging.DEBUG)
+
+# File handler with rotation
+file_handler = RotatingFileHandler(
+    'fsm.log',
+    maxBytes=10485760,  # 10MB
+    backupCount=5
+)
+file_handler.setLevel(logging.DEBUG)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# Formatter
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Add handlers
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+# Now initialize FSM
+fsm = VaultState("example_fsm.json")
+```
+
+## JSON Schema
+
+The FSM configuration must have the following structure:
 
 ```json
 {
-  "version": <float>,           // Optional: Versionsnummer
-  "initial": <string>,          // Pflicht: Name des initialen States
-  "data": {                     // Optional: Globale Daten
+  "version": <float>,           // Optional: Version number
+  "initial": <string>,          // Required: Name of initial state
+  "data": {                     // Optional: Global data
     "<key>": <value>
   },
-  "state": {                    // Pflicht: State-Definitionen
+  "state": {                    // Required: State definitions
     "<state_name>": {
-      "data": {                 // Optional: State-spezifische Daten
+      "data": {                 // Optional: State-specific data
         "<key>": <value>
       },
-      "transition": {           // Optional: Transitionen
+      "transition": {           // Optional: Transitions
         "<event_name>": "<target_state>"
       }
     }
@@ -296,39 +384,44 @@ Die FSM-Konfiguration muss folgende Struktur haben:
 }
 ```
 
-### Validierungsregeln
+### Validation Rules
 
-- ✅ Feld `state` ist erforderlich
-- ✅ Feld `initial` ist erforderlich
-- ✅ Der initiale State muss in `state` definiert sein
-- ✅ Alle Ziel-States in Transitionen müssen existieren
-- ✅ States und Transitionen müssen Dictionaries sein
+- ✅ Field `state` is required
+- ✅ Field `initial` is required
+- ✅ The initial state must be defined in `state`
+- ✅ All target states in transitions must exist
+- ✅ States and transitions must be dictionaries
 
 ## Error Handling
 
 ```python
 from vault_state import VaultState, FSMValidationError
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 try:
     fsm = VaultState("my_fsm.json")
 except FileNotFoundError as e:
-    print(f"Datei nicht gefunden: {e}")
+    logging.error(f"File not found: {e}")
 except FSMValidationError as e:
-    print(f"Ungültige FSM-Konfiguration: {e}")
+    logging.error(f"Invalid FSM configuration: {e}")
 ```
 
 ## Best Practices
 
-1. **Naming Convention**: Verwenden Sie aussagekräftige State- und Event-Namen
-2. **End States**: Definieren Sie explizite End-States mit leeren Transitionen
-3. **Global Data**: Nutzen Sie globale Daten für konstante Werte
-4. **State Data**: Nutzen Sie state-spezifische Daten für variable Werte
-5. **Validation**: Verwenden Sie `is_valid_transition()` vor kritischen Events
-6. **History**: Nutzen Sie `get_state_history()` für Debugging und Logging
+1. **Naming Convention**: Use descriptive state and event names
+2. **End States**: Define explicit end states with empty transitions
+3. **Global Data**: Use global data for constant values
+4. **State Data**: Use state-specific data for variable values
+5. **Validation**: Use `is_valid_transition()` before critical events
+6. **History**: Use `get_state_history()` for debugging and logging
+7. **Logging**: Configure appropriate log levels for production vs development
+8. **Error Handling**: Always catch FSMValidationError and FileNotFoundError
 
 ## Testing
 
-Das Modul enthält einen eingebauten Test:
+The module contains a built-in test:
 
 ```bash
 python vault_state.py
@@ -348,7 +441,7 @@ Current state: mp_init_01
 ...
 ```
 
-## Lizenz
+## License
 
 ```
 Copyright [2025] [ecki]
@@ -357,15 +450,16 @@ SPDX-License-Identifier: Apache-2.0
 
 ## Support
 
-Bei Fragen oder Problemen erstellen Sie bitte ein Issue im Repository.
+For questions or issues, please create an issue in the repository.
 
 ## Changelog
 
 ### Version 1.0 (2025)
-- ✨ Initiales Release mit vollständiger Validierung
-- ✨ Type Hints und umfangreiche Dokumentation
-- ✨ State History Tracking
-- ✨ Graph Export Funktionalität
-- ✨ Strict/Non-Strict Mode
-- 🐛 Bug-Fix: String-Vergleich statt Identitäts-Vergleich
-- 🐛 Bug-Fix: Verbessertes Exception Handling
+- ✨ Initial release with comprehensive validation
+- ✨ Type hints and extensive documentation
+- ✨ State history tracking
+- ✨ Graph export functionality
+- ✨ Strict/Non-strict mode
+- ✨ Integrated logging support
+- 🐛 Bug fix: String comparison instead of identity comparison
+- 🐛 Bug fix: Improved exception handling
