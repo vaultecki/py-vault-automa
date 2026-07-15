@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vault-automa"
+version = "1.0.0"
+description = "JSON-based Finite State Machine with signal support"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "ecki" }]
+requires-python = ">=3.9"
+dependencies = [
+    "PySignal>=1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.15",
+]
+
+[tool.setuptools]
+py-modules = ["vault_state"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "N", "C4", "PIE", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

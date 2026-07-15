@@ -17,7 +17,6 @@
     },
     "mp_init_01": {
       "transition": {
-        "event": "target",
         "start": "mp_change_02",
         "abort": "mp_end_03"
       },

@@ -4,10 +4,13 @@
 """
 Improved Finite State Machine implementation with enhanced validation and error handling.
 """
+from __future__ import annotations
+
 import json
 import logging
-from typing import Dict, List, Tuple, Any, Optional
 from pathlib import Path
+from typing import Any
+
 import PySignal
 
 # Configure module logger
@@ -16,7 +19,6 @@ logger = logging.getLogger('VaultState')
 
 class FSMValidationError(Exception):
     """Custom exception for FSM validation errors."""
-    pass
 
 
 class VaultState:
@@ -43,10 +45,10 @@ class VaultState:
         """
         self.__filename = Path(filename)
         self.__strict_mode = strict_mode
-        self.__transition_dict: Dict[Tuple[str, str], str] = {}
-        self.__current_state: Optional[str] = None
-        self.__data: Dict[str, Any] = {}
-        self.__state_history: List[str] = []
+        self.__transition_dict: dict[tuple[str, str], str] = {}
+        self.__current_state: str | None = None
+        self.__data: dict[str, Any] = {}
+        self.__state_history: list[str] = []
 
         logger.info(f"Initializing FSM from {self.__filename}")
 
@@ -70,17 +72,17 @@ class VaultState:
             raise FileNotFoundError(error_msg)
 
         try:
-            with open(self.__filename, 'r', encoding='utf-8') as file:
+            with open(self.__filename, encoding='utf-8') as file:
                 self.__data = json.load(file)
             logger.debug(f"Successfully loaded JSON from {self.__filename}")
         except json.JSONDecodeError as e:
             error_msg = f"Invalid JSON in {self.__filename}: {e}"
             logger.error(error_msg)
-            raise FSMValidationError(error_msg)
-        except IOError as e:
+            raise FSMValidationError(error_msg) from e
+        except OSError as e:
             error_msg = f"Error reading file {self.__filename}: {e}"
             logger.error(error_msg)
-            raise FSMValidationError(error_msg)
+            raise FSMValidationError(error_msg) from e
 
     def __validate_and_analyse_data(self) -> None:
         """
@@ -128,7 +130,10 @@ class VaultState:
             for event, target_state in transitions.items():
                 # Validate target state exists
                 if target_state not in states:
-                    msg = f"Target state '{target_state}' for event '{event}' in state '{state}' doesn't exist"
+                    msg = (
+                        f"Target state '{target_state}' for event '{event}' "
+                        f"in state '{state}' doesn't exist"
+                    )
                     if self.__strict_mode:
                         logger.error(msg)
                         raise FSMValidationError(msg)
@@ -149,12 +154,12 @@ class VaultState:
         logger.debug(f"Current state queried: {self.__current_state}")
         return self.__current_state
 
-    def get_state_history(self) -> List[str]:
+    def get_state_history(self) -> list[str]:
         """Returns the history of state transitions."""
         logger.debug(f"State history queried: {len(self.__state_history)} states")
         return self.__state_history.copy()
 
-    def get_data(self) -> Dict[str, Any]:
+    def get_data(self) -> dict[str, Any]:
         """Returns data for the current state merged with global data."""
         global_data = self.__data.get("data", {})
         state_data = self.get_data_state(self.__current_state)
@@ -164,7 +169,7 @@ class VaultState:
         logger.debug(f"Data for state '{self.__current_state}': {len(merged_data)} keys")
         return merged_data
 
-    def get_data_state(self, state: Optional[str] = None) -> Dict[str, Any]:
+    def get_data_state(self, state: str | None = None) -> dict[str, Any]:
         """
         Returns data for a specific state or global data.
 
@@ -183,7 +188,7 @@ class VaultState:
         logger.debug(f"Data for state '{state}': {len(data)} keys")
         return data
 
-    def event(self, event: Optional[str] = None) -> bool:
+    def event(self, event: str | None = None) -> bool:
         """
         Process an event and transition to new state if possible.
 
@@ -218,7 +223,7 @@ class VaultState:
                 logger.debug(f"Event '{event}' triggered but state unchanged: {old_state}")
             return False
 
-    def get_possible_transitions(self) -> List[str]:
+    def get_possible_transitions(self) -> list[str]:
         """
         Returns list of valid events for the current state.
 
@@ -226,7 +231,7 @@ class VaultState:
             List of event names that can be triggered from current state
         """
         transitions = [
-            event for state, event in self.__transition_dict.keys()
+            event for state, event in self.__transition_dict
             if state == self.__current_state
         ]
         logger.debug(f"Possible transitions from '{self.__current_state}': {transitions}")
@@ -254,13 +259,13 @@ class VaultState:
         self.__state_history = [self.__current_state]
         self.automa_state_changed.emit(self.__current_state)
 
-    def get_all_states(self) -> List[str]:
+    def get_all_states(self) -> list[str]:
         """Returns list of all defined states."""
         states = list(self.__data.get("state", {}).keys())
         logger.debug(f"All states queried: {len(states)} states")
         return states
 
-    def export_graph(self) -> Dict[str, Any]:
+    def export_graph(self) -> dict[str, Any]:
         """
         Export FSM structure for visualization.
 
