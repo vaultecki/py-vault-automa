@@ -18,6 +18,7 @@ dependencies = [
 dev = [
     "pytest>=8",
     "ruff>=0.15",
+    "mypy>=1.13",
 ]
 
 [tool.setuptools]
@@ -32,3 +33,12 @@ select = ["E", "F", "I", "UP", "B", "SIM", "N", "C4", "PIE", "RUF"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+files = ["vault_state.py", "tests"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = "vault_state"
+disallow_untyped_defs = true

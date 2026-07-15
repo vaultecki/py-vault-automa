@@ -46,7 +46,7 @@ class VaultState:
         self.__filename = Path(filename)
         self.__strict_mode = strict_mode
         self.__transition_dict: dict[tuple[str, str], str] = {}
-        self.__current_state: str | None = None
+        self.__current_state: str = ""
         self.__data: dict[str, Any] = {}
         self.__state_history: list[str] = []
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
         # Test valid transition
         print("→ Emitting 'init_ok' event:")
-        success = fsm.automa_event.emit("init_ok")
+        fsm.automa_event.emit("init_ok")
         print(f"Current state: {fsm.get_current_state()}")
         print(f"State data: {fsm.get_data()}")
         print(f"Possible transitions: {fsm.get_possible_transitions()}\n")
