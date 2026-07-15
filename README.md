@@ -5,7 +5,7 @@ A robust, JSON-based Finite State Machine (FSM) implementation in Python with si
 ## Features
 
 - 📄 **JSON-based Configuration** - Easy definition of states and transitions
-- 🔔 **Signal System** - Event-based communication via PySignal
+- 🔔 **Signal System** - Event-based communication via psygnal
 - ✅ **Comprehensive Validation** - FSM structure validation on load
 - 📊 **State History** - Tracking of all state transitions
 - 🎨 **Graph Export** - Export for visualization
@@ -25,7 +25,7 @@ For development (adds `pytest` and `ruff`):
 pip install -e ".[dev]"
 ```
 
-Dependencies are declared in `pyproject.toml` (currently just `PySignal>=1.1.1`).
+Dependencies are declared in `pyproject.toml` (currently just `psygnal>=0.11`).
 
 ## Quick Start
 
@@ -253,8 +253,8 @@ def on_state_changed(new_state: str):
 fsm.automa_state_changed.connect(on_state_changed)
 ```
 
-> **Note:** PySignal keeps only a `weakref` to connected slots. A bare bound
-> method of a builtin type (e.g. `some_list.append`) is garbage-collected
+> **Note:** psygnal keeps only a `weakref` to connected bound methods. A bare
+> bound method of a builtin type (e.g. `some_list.append`) is garbage-collected
 > immediately after `connect()` returns, so the callback silently never
 > fires. Connect a plain function, a lambda, or a bound method of a
 > long-lived object instead (see the tests in `tests/test_vault_state.py`

@@ -183,8 +183,8 @@ class TestSignals:
         assert fsm.get_current_state() == "running"
 
     def test_automa_state_changed_emits_on_transition(self, fsm):
-        # PySignal keeps only a weakref to connected slots, so a bare bound
-        # method like `seen.append` is garbage-collected immediately; a
+        # psygnal keeps only a weakref to connected bound methods, so a bare
+        # bound method like `seen.append` is garbage-collected immediately; a
         # lambda is kept alive strongly by the signal's internal slot list.
         seen = []
         fsm.automa_state_changed.connect(lambda state: seen.append(state))

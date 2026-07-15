@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import PySignal
+from psygnal import Signal
 
 # Configure module logger
 logger = logging.getLogger('VaultState')
@@ -28,8 +28,8 @@ class VaultState:
     Supports state transitions via events and provides signals for state changes.
     """
 
-    automa_event = PySignal.ClassSignal()
-    automa_state_changed = PySignal.ClassSignal()
+    automa_event = Signal(str)
+    automa_state_changed = Signal(str)
 
     def __init__(self, filename: str, strict_mode: bool = True):
         """
