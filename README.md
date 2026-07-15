@@ -16,13 +16,16 @@ A robust, JSON-based Finite State Machine (FSM) implementation in Python with si
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+pip install .
 ```
 
-**requirements.txt:**
+For development (adds `pytest` and `ruff`):
+
+```bash
+pip install -e ".[dev]"
 ```
-PySignal>=1.1.1
-```
+
+Dependencies are declared in `pyproject.toml` (currently just `PySignal>=1.1.1`).
 
 ## Quick Start
 
@@ -48,7 +51,6 @@ Create a JSON file (e.g., `example_fsm.json`):
     },
     "mp_init_01": {
       "transition": {
-        "event": "target",
         "start": "mp_change_02",
         "abort": "mp_end_03"
       },
@@ -129,11 +131,11 @@ logger.setLevel(logging.INFO)
 ### Example Log Output
 
 ```
-2025-11-18 10:15:23 - VaultState - INFO - Initialized FSM from example_fsm.json
-2025-11-18 10:15:23 - VaultState - INFO - Initial state: Superstate
-2025-11-18 10:15:23 - VaultState - DEBUG - Loaded 4 states with 5 transitions
-2025-11-18 10:15:24 - VaultState - INFO - Event 'init_ok' triggered: Superstate -> mp_init_01
-2025-11-18 10:15:25 - VaultState - WARNING - No transition for event 'invalid' in state 'mp_init_01'
+2026-07-15 18:52:29,703 - VaultState - INFO - Initializing FSM from example_fsm.json
+2026-07-15 18:52:29,703 - VaultState - INFO - Validation complete: 4 states, 5 transitions
+2026-07-15 18:52:29,704 - VaultState - INFO - FSM initialized successfully with initial state: Superstate
+2026-07-15 18:52:29,704 - VaultState - INFO - Event 'init_ok' triggered: Superstate -> mp_init_01
+2026-07-15 18:52:29,704 - VaultState - WARNING - No transition for event 'invalid_event' in state 'mp_init_01'
 ```
 
 ## API Reference
@@ -161,38 +163,38 @@ get_current_state() -> str
 Returns the name of the current state.
 
 ```python
-get_all_states() -> List[str]
+get_all_states() -> list[str]
 ```
 Returns a list of all defined states.
 
 ```python
-get_state_history() -> List[str]
+get_state_history() -> list[str]
 ```
 Returns the history of all traversed states.
 
 #### Data Access
 
 ```python
-get_data() -> Dict[str, Any]
+get_data() -> dict[str, Any]
 ```
 Returns data for the current state (merged with global data).
 
 ```python
-get_data_state(state: Optional[str] = None) -> Dict[str, Any]
+get_data_state(state: str | None = None) -> dict[str, Any]
 ```
 Returns data for a specific state. Returns global data if `state=None`.
 
 #### Transitions
 
 ```python
-event(event: Optional[str] = None) -> bool
+event(event: str | None = None) -> bool
 ```
 Processes an event and performs a transition if valid.
 
 **Returns:** `True` if state changed, `False` otherwise.
 
 ```python
-get_possible_transitions() -> List[str]
+get_possible_transitions() -> list[str]
 ```
 Returns a list of all valid events for the current state.
 
@@ -209,7 +211,7 @@ reset() -> None
 Resets the FSM to the initial state and clears history.
 
 ```python
-export_graph() -> Dict[str, Any]
+export_graph() -> dict[str, Any]
 ```
 Exports the FSM structure for visualization.
 
@@ -250,6 +252,13 @@ def on_state_changed(new_state: str):
 
 fsm.automa_state_changed.connect(on_state_changed)
 ```
+
+> **Note:** PySignal keeps only a `weakref` to connected slots. A bare bound
+> method of a builtin type (e.g. `some_list.append`) is garbage-collected
+> immediately after `connect()` returns, so the callback silently never
+> fires. Connect a plain function, a lambda, or a bound method of a
+> long-lived object instead (see the tests in `tests/test_vault_state.py`
+> for examples).
 
 ## Advanced Examples
 
@@ -421,7 +430,17 @@ except FSMValidationError as e:
 
 ## Testing
 
-The module contains a built-in test:
+The test suite uses `pytest` and lives in `tests/test_vault_state.py`:
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+It covers validation (missing/invalid fields, strict vs. non-strict mode),
+transitions, state history, data merging, signals, and `export_graph()`.
+
+The module also contains a manual smoke test:
 
 ```bash
 python vault_state.py
@@ -441,6 +460,14 @@ Current state: mp_init_01
 ...
 ```
 
+## Linting
+
+The project uses `ruff`, configured in `pyproject.toml`:
+
+```bash
+ruff check .
+```
+
 ## License
 
 ```
@@ -453,6 +480,12 @@ SPDX-License-Identifier: Apache-2.0
 For questions or issues, please create an issue in the repository.
 
 ## Changelog
+
+### Unreleased
+- 🐛 Bug fix: removed invalid `"event": "target"` transition from `example_fsm.json` that broke strict-mode validation
+- ✅ Added `pytest` test suite (`tests/test_vault_state.py`)
+- 📦 Added `pyproject.toml` packaging (installable via `pip install .`)
+- 🧹 Linted codebase with `ruff`; modernized type hints (`dict`/`list`/`X | None`)
 
 ### Version 1.0 (2025)
 - ✨ Initial release with comprehensive validation
